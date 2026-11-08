@@ -14,6 +14,7 @@ export class HomePage extends BasePage {
   readonly searchButton: Locator;
   readonly suggestionList: Locator;
   readonly listingCards: Locator;
+  readonly homesTab: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -23,6 +24,7 @@ export class HomePage extends BasePage {
     this.searchButton = page.getByTestId('structured-search-input-search-button');
     this.suggestionList = page.getByRole('listbox').or(page.getByTestId('structured-search-input-field-query-panel'));
     this.listingCards = page.getByTestId('card-container');
+    this.homesTab = page.getByRole('tab', { name: /^homes$/i }).or(page.getByRole('link', { name: /^homes$/i })).first();
   }
 
   async expectLoaded(): Promise<void> {
@@ -30,8 +32,20 @@ export class HomePage extends BasePage {
     await expect(this.page).toHaveTitle(/airbnb/i);
   }
 
+  /**
+   * The header carries Homes / Experiences / Services tabs and the preselected one
+   * varies between sessions. Our search specs are about stays, so pin it to Homes.
+   */
+  async selectHomesTab(): Promise<void> {
+    if (await this.homesTab.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      const selected = await this.homesTab.getAttribute('aria-selected');
+      if (selected !== 'true') await this.safeClick(this.homesTab);
+    }
+  }
+
   /** Opens the "Where" field (the compact bar expands into the full search form). */
   async openWhereField(): Promise<void> {
+    await this.selectHomesTab();
     if (!(await this.whereInput.isVisible().catch(() => false))) {
       await this.safeClick(this.page.getByTestId('little-search-location').or(this.searchBar).first());
     }
