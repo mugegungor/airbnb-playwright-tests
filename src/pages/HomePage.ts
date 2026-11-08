@@ -33,7 +33,7 @@ export class HomePage extends BasePage {
   /** Opens the "Where" field (the compact bar expands into the full search form). */
   async openWhereField(): Promise<void> {
     if (!(await this.whereInput.isVisible().catch(() => false))) {
-      await this.page.getByTestId('little-search-location').or(this.searchBar).first().click();
+      await this.safeClick(this.page.getByTestId('little-search-location').or(this.searchBar).first());
     }
     await expect(this.whereInput).toBeVisible();
   }
@@ -57,7 +57,7 @@ export class HomePage extends BasePage {
   /** Runs a search with only a destination (dates / guests flexible). */
   async searchFor(destination: string): Promise<SearchResultsPage> {
     await this.chooseDestination(destination);
-    await this.searchButton.click();
+    await this.safeClick(this.searchButton);
     const results = new SearchResultsPage(this.page);
     await results.expectLoaded();
     return results;

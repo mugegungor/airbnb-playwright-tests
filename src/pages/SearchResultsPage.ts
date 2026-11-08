@@ -56,13 +56,31 @@ export class SearchResultsPage extends BasePage {
   }
 
   async expectLoaded(): Promise<void> {
-    await expect(this.page).toHaveURL(/\/s\/.+\/homes/);
+    await expect(this.page).toHaveURL(/\/s\/.+\/(homes|hotels)/);
     await expect(this.listingCards.first()).toBeVisible({ timeout: 30_000 });
   }
 
+  /**
+   * Cards are rendered lazily; nudge the page so the grid mounts, then wait until
+   * the count stops growing before reporting it.
+   */
   async resultCount(): Promise<number> {
     await this.listingCards.first().waitFor();
-    return this.listingCards.count();
+    await this.page.mouse.wheel(0, 600);
+    let last = -1;
+    await expect
+      .poll(
+        async () => {
+          const now = await this.listingCards.count();
+          const stable = now === last;
+          last = now;
+          return stable;
+        },
+        { timeout: 10_000, intervals: [500, 1_000] },
+      )
+      .toBe(true);
+    await this.page.mouse.wheel(0, -600);
+    return last;
   }
 
   async expectResultsFor(destination: string): Promise<void> {
@@ -76,6 +94,7 @@ export class SearchResultsPage extends BasePage {
     const card = this.listingCards.nth(index);
     await card.scrollIntoViewIfNeeded();
 
+    await this.dismissPopups();
     const [newPage] = await Promise.all([
       this.page.context().waitForEvent('page', { timeout: 20_000 }).catch(() => null),
       card.click(),
@@ -90,7 +109,7 @@ export class SearchResultsPage extends BasePage {
   }
 
   async openFilters(): Promise<void> {
-    await this.filtersButton.click();
+    await this.safeClick(this.filtersButton);
     await expect(this.filtersDialog).toBeVisible();
   }
 }

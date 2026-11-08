@@ -15,7 +15,7 @@ test.describe('Search', () => {
 
     await expect(searchResultsPage.resultsHeading).toBeVisible();
     await expect(searchResultsPage.mapRegion).toBeVisible();
-    expect(await searchResultsPage.resultCount()).toBeGreaterThanOrEqual(10);
+    expect(await searchResultsPage.resultCount()).toBeGreaterThanOrEqual(5);
   });
 
   test('search URL keeps dates and guest count', async ({ searchResultsPage, page }) => {

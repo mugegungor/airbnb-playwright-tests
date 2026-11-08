@@ -21,22 +21,42 @@ export abstract class BasePage {
   /**
    * Airbnb shows a handful of interstitials (cookie consent, translation prompt,
    * "Get the app" sheet, promo modals). None of them are the subject of our tests,
-   * so we close whatever shows up and move on.
+   * so we close whatever shows up and move on. The modal may appear a moment after
+   * load, so this is also called right before any click that it could intercept.
    */
   async dismissPopups(): Promise<void> {
-    const candidates: Locator[] = [
-      this.page.getByRole('button', { name: /^ok$/i }),
-      this.page.getByRole('button', { name: /accept( all)?/i }),
-      this.page.getByRole('button', { name: /got it/i }),
-      this.page.getByRole('dialog').getByRole('button', { name: /close/i }),
-    ];
+    const modal = this.page.getByTestId('modal-container');
 
-    for (const candidate of candidates) {
-      const btn = candidate.first();
-      if (await btn.isVisible({ timeout: 1_500 }).catch(() => false)) {
-        await btn.click({ timeout: 3_000 }).catch(() => undefined);
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const candidates: Locator[] = [
+        modal.getByRole('button', { name: /got it|^ok$|accept( all)?|dismiss|not now|continue/i }),
+        modal.getByRole('button', { name: /close/i }),
+        this.page.getByRole('button', { name: /^ok$|accept( all)?|got it/i }),
+      ];
+
+      let clicked = false;
+      for (const candidate of candidates) {
+        const btn = candidate.first();
+        if (await btn.isVisible({ timeout: 1_000 }).catch(() => false)) {
+          await btn.click({ timeout: 3_000 }).catch(() => undefined);
+          clicked = true;
+          break;
+        }
       }
+
+      if (await modal.first().isVisible({ timeout: 500 }).catch(() => false)) {
+        if (!clicked) await this.page.keyboard.press('Escape');
+        await modal.first().waitFor({ state: 'hidden', timeout: 3_000 }).catch(() => undefined);
+      }
+
+      if (!(await modal.first().isVisible({ timeout: 300 }).catch(() => false))) return;
     }
+  }
+
+  /** Clicks a locator after making sure no interstitial is covering it. */
+  protected async safeClick(locator: Locator): Promise<void> {
+    await this.dismissPopups();
+    await locator.click();
   }
 
   async expectUrlContains(fragment: string | RegExp): Promise<void> {

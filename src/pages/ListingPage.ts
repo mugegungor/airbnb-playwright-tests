@@ -19,11 +19,11 @@ export class ListingPage extends BasePage {
     super(page);
     this.title = page.getByRole('heading', { level: 1 }).first();
     this.gallery = page.getByRole('button', { name: /show all photos/i }).or(page.getByTestId('photo-viewer-section')).first();
-    this.reserveButton = page.getByRole('button', { name: /reserve|check availability/i }).first();
+    this.reserveButton = page.getByTestId('homes-pdp-cta-btn').or(page.getByRole('button', { name: /reserve|check availability/i })).first();
     this.priceBox = page.getByTestId('book-it-default').or(page.locator('[data-section-id="BOOK_IT_SIDEBAR"]')).first();
     this.hostSection = page.locator('[data-section-id="HOST_OVERVIEW_DEFAULT"]').or(page.getByText(/hosted by/i)).first();
     this.shareButton = page.getByRole('button', { name: /share/i }).first();
-    this.saveButton = page.getByRole('button', { name: /^save$/i }).first();
+    this.saveButton = page.getByRole('button', { name: /save|wishlist/i }).first();
   }
 
   async expectLoaded(): Promise<void> {
@@ -40,6 +40,6 @@ export class ListingPage extends BasePage {
   async expectCoreSectionsVisible(): Promise<void> {
     await expect(this.title).not.toBeEmpty();
     await expect(this.gallery).toBeVisible();
-    await expect(this.priceBox.or(this.reserveButton)).toBeVisible();
+    await expect(this.priceBox.or(this.reserveButton).first()).toBeVisible();
   }
 }
