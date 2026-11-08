@@ -1,0 +1,28 @@
+{
+  "name": "airbnb-playwright-tests",
+  "version": "1.0.0",
+  "description": "End-to-end UI test automation for airbnb.com built with Playwright + TypeScript (Page Object Model)",
+  "author": "Müge Güngör",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:chromium": "playwright test --project=chromium",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "install:browsers": "playwright install --with-deps"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "dotenv": "^16.4.7",
+    "eslint": "^8.57.1",
+    "typescript": "^5.7.2"
+  }
+}

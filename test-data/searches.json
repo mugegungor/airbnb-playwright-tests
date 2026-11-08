@@ -1,0 +1,5 @@
+[
+  { "destination": "Berlin, Germany", "adults": 2, "nights": 3 },
+  { "destination": "Istanbul, Turkey", "adults": 2, "nights": 2 },
+  { "destination": "Lisbon, Portugal", "adults": 1, "nights": 4 }
+]
